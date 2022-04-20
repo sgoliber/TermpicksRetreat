@@ -212,6 +212,8 @@ class termpicks_interpolation:
     
         dates = newDF['Date'].to_list()
         datelist=[]
+        #Some termpicks data is year only, place it in the middle of the year
+        ##TO DO: option to remove these if intrested in seasonality**
         for i in dates:
             year = i[0:4]
             month = i[5:7]
