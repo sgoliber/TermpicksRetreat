@@ -52,7 +52,7 @@ class termpicks_trace:
         self.glacid = glacid
         
     
-    #Interpolate evenly spaced points at redistibuted vertices along a line
+    #Interpolate evenly spaced points at redistibuted vertices along a line, n_vert is in meters
     def trace2points(self,n_vert=30):
         #Number of verticies to redistribute
 
