@@ -52,8 +52,8 @@ class termpicks_trace:
         self.glacid = glacid
         
     
-    #Interpolate evenly spaced points at redistibuted vertices along a line, n_vert is in meters
-    def trace2points(self,n_vert=30):
+    #Interpolate evenly spaced points at redistibuted vertices along a line
+    def trace2points(self,vert_dist=30, truncate=True):
         #Number of verticies to redistribute
 
         shpDF = self.data
@@ -73,11 +73,17 @@ class termpicks_trace:
                 
                 #for each segment, redistibute vertices
                 for i in range(0,segs):
-                    multiline_r = redistribute_vertices(exploded.geometry[i],n_vert)
+                    multiline_r = redistribute_vertices(exploded.geometry[i],vert_dist)
                     #save each vertex as a coordiante
                     for coord in multiline_r.coords:
                         point_r.append(coord)
-                        
+                
+                #remove 5% of either end of interpolated terminus
+                if truncate == True:
+                    num = int(len(point_r)*0.05)
+                    point_r = point_r[num:-num]
+                    
+                
                 #turn list of coordiantes into a multipoint feature
                 points = MultiPoint(point_r)
                 pointsList.append(points)
@@ -85,10 +91,16 @@ class termpicks_trace:
             else:
                 #Same process as aobve, but for single Linestrings
                 singleline = r['geometry']
-                singleline_r = redistribute_vertices(singleline, n_vert)
+                singleline_r = redistribute_vertices(singleline, vert_dist)
                 point_r = []
                 for coord in singleline_r.coords:
                     point_r.append(coord)
+                    
+                #remove 5% of either end of interpolated terminus
+                if truncate == True:
+                    num = int(len(point_r)*0.05)
+                    point_r = point_r[num:-num]
+                    
                 points = MultiPoint(point_r)
                 pointsList.append(points)
             
@@ -113,13 +125,13 @@ class termpicks_centerline:
 
         #Interpolate evenly spaced points at redistibuted vertices along a
         #centerline
-    def line2points(self,n_vert):
+    def line2points(self,vert_dist):
         shpDF = self.data
         
         #Get geometry of the centerline of intrest
         singleline = shpDF['geometry'].iloc[0]
         #Redistibute vertices
-        singleline_r = redistribute_vertices(singleline, n_vert)
+        singleline_r = redistribute_vertices(singleline, vert_dist)
         point_r = []
         #export each coordiate of the redistributed vertices 
         for coord in singleline_r.coords:
@@ -212,8 +224,6 @@ class termpicks_interpolation:
     
         dates = newDF['Date'].to_list()
         datelist=[]
-        #Some termpicks data is year only, place it in the middle of the year
-        ##TO DO: option to remove these if intrested in seasonality**
         for i in dates:
             year = i[0:4]
             month = i[5:7]
